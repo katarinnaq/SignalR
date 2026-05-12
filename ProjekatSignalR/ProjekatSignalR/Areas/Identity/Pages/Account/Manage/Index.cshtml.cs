@@ -116,7 +116,7 @@ namespace ProjekatSignalR.Areas.Identity.Pages.Account.Manage
                 }
             }
 
-            // IME
+            // ime
             if (string.IsNullOrEmpty(user.Ime))
             {
                 user.Ime = Input.Ime;
@@ -127,7 +127,7 @@ namespace ProjekatSignalR.Areas.Identity.Pages.Account.Manage
                 return RedirectToPage();
             }
 
-            // PREZIME
+            // prezime
             if (string.IsNullOrEmpty(user.Prezime))
             {
                 user.Prezime = Input.Prezime;
@@ -138,7 +138,7 @@ namespace ProjekatSignalR.Areas.Identity.Pages.Account.Manage
                 return RedirectToPage();
             }
 
-            // KORISNICKO IME
+            // kor ime
             if (string.IsNullOrEmpty(user.KorisnickoIme))
             {
                 user.KorisnickoIme = Input.KorisnickoIme;
@@ -149,12 +149,12 @@ namespace ProjekatSignalR.Areas.Identity.Pages.Account.Manage
                 return RedirectToPage();
             }
 
-            // ⬇️ JEDAN SAVE ZA SVE
+            // cuvanje
             var updateResult = await _userManager.UpdateAsync(user);
 
             if (!updateResult.Succeeded)
             {
-                StatusMessage = "Greška pri čuvanju podataka";
+                StatusMessage = "Greska pri cuvanju podataka";
                 return RedirectToPage();
             }
 
