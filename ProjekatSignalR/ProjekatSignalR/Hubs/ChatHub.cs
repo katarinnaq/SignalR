@@ -21,35 +21,46 @@ namespace ProjekatSignalR.Hubs
         // senderId = ko salje poruku
         // receiberId = ko prima poruku
         // message = sadrzaj poruke
-        public async Task SendPrivateMessage(string receiverId, string message)
+        public async Task SendPrivateMessage(string senderId, string receiverId, string message)
         {
-            var senderId = Context.UserIdentifier; // ID trenutno ulogovanog korisnika
-
-            if (string.IsNullOrEmpty(receiverId))
+            try
             {
-                throw new Exception("ReceverId nije validan.");
+                Console.WriteLine("Sender: sender=Id{senderId}, reciverId={reciverId}, message={message}");
+                // Provera polja da li su null
+                if (string.IsNullOrEmpty(senderId) || string.IsNullOrEmpty(receiverId)
+                    || string.IsNullOrEmpty(message))
+                {
+                    throw new Exception("ReceverId nije validan.");
+                }
+
+               // Pravimo objekat poruke koji ce biti sacuvan u bazi
+               var poruka = new PrivatniChat
+               {
+                   PosiljalacId = senderId,
+                   PrimalacId = receiverId,
+                   Sadrzaj = message,
+                   PoslatoU = DateTime.Now
+               };
+
+                // Dodajemo poruku u bazu
+                _context.PrivatnePoruke.Add(poruka);
+
+                // Cuvamo promene u bazi
+                await _context.SaveChangesAsync();
+
+                // Saljemo poruku korisniku koji prima poruku
+                // RecivePrivateMessage ce frontend slusati
+                await Clients.User(receiverId).SendAsync("RecivePrivateMessage", senderId, message);
+
+                // Saljemo poruku i posiljaocu kako bi je video odmah u svom chatu
+                await Clients.Caller.SendAsync("RecivePrivateMessage", senderId, message);
             }
-            // Pravimo objekat poruke koji ce biti sacuvan u bazi
-            var poruka = new PrivatniChat
+            catch (Exception ex)
             {
-                PosiljalacId = senderId,
-                PrimalacId = receiverId,
-                Sadrzaj = message,
-                PoslatoU = DateTime.Now
-            };
+                Console.WriteLine("greska: " + ex.Message);
+                throw;
+            }
 
-            // Dodajemo poruku u bazu
-            _context.PrivatnePoruke.Add(poruka);
-
-            // Cuvamo promene u bazi
-            await _context.SaveChangesAsync();
-
-            // Saljemo poruku korisniku koji prima poruku
-            // RecivePrivateMessage ce frontend slusati
-            await Clients.User(receiverId).SendAsync("RecivePrivateMessage", senderId, message);
-
-            // Saljemo poruku i posiljaocu kako bi je video odmah u svom chatu
-            await Clients.Caller.SendAsync("RecivePrivateMessage", senderId, message);
         }
 
         // ULAZAK U GRUPU
