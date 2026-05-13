@@ -21,7 +21,10 @@ namespace ProjekatSignalR.Controllers
         public IActionResult GetUsers()
         {
             // Dohvatanje svih korisnika iz Identity tabele User
-            var users = _context.Users.ToList();
+            var users = _context.Users
+                .Where(u => u.UserName != User.Identity.Name) // izaci sebe iz liste
+                .Select(u => new { u.Id, u.UserName})
+                .ToList();
 
             // vracamo listu korisnika sa statusom OK
             return Ok(users);

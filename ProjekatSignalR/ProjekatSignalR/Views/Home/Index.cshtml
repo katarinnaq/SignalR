@@ -15,26 +15,26 @@
 <h2>Privatni chat</h2>
 <div>
     <select id="reciverSelect">
-        <option value="value">Izaberite korisnika</option>
+        <option value="">Izaberite korisnika</option>
     </select>
     <input type="text" id="messageInput" placeholder="Poruka..."/>
     <button id="sendBtn">Posalji</button>
 </div>
 
 <h2>Poruke</h2>
-<ul id="messegesList"></ul>
+<ul id="messagesList"></ul>
 
 @section Scripts{
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
 
     <script>
-        // Id ulogovanog korisnika
-        let currentId = "";
+        // Ime ulogovanog korisnika
+        let currentUserName = '@User.Identity.Name';
         
         // Kreiramo SignalR konekciju
         const connection = new signalR.HubConnectionBuilder()
-        .withUrl("/chathub")
-        .build();
+            .withUrl("/chathub")
+            .build();
 
         // Funkcija za prikazivanje poruka
         function addMessage(text){
@@ -55,17 +55,14 @@
 
                 // Ucitaj korisnike
                 fetch("/api/User")
-                    .then(Response = Response.json())
+                    .then(response => response.json())
                     .then(users => {
                         const select = document.getElementById("reciverSelect");
                         users.forEach(u => {
-                            if (u.id !== currentId)
-                            {
-                                const option = document.createElement("option");
-                                option.value = u.id;
-                                option.textContent = u.userName;
-                                select.appendChild(option);
-                            }
+                            const option = document.createElement("option");
+                            option.value = u.id;
+                            option.textContent = u.userName;
+                            select.appendChild(option);
                         });
                     });
             })
@@ -82,7 +79,8 @@
                     return;
                 }
 
-                connection.invoke("SendPrivateMessage", currentId, reciverId, message)
+                // SignalR ce automatski koristiti ulogovanog korisnika ka senderId
+                connection.invoke("SendPrivateMessage", reciverId, message)
                     .catch(err => console.error(err.toString()));
 
                 document.getElementById("messageInput").value = ""; // osciti input
