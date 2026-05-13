@@ -1,6 +1,95 @@
-﻿namespace ProjekatSignalR.Hubs
+﻿using Microsoft.AspNetCore.SignalR;
+using ProjekatSignalR.Data;
+using ProjekatSignalR.Models;
+
+namespace ProjekatSignalR.Hubs
 {
-    public class ChatHub
+    // Hub predstavlja centralnu racku kominikacije.
+    // Svi korisnici komuniciraju preko njega.
+    public class ChatHub : Hub
     {
+        // DbContext koristimo da pristupimo bazi
+        private readonly ApplicationDbContext _context;
+
+        public ChatHub(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        // PRIVATNE PORUKE
+        // Ova metoda salje privatnu poruku izmedju dva korisnika
+        // senderId = ko salje poruku
+        // receiberId = ko prima poruku
+        // message = sadrzaj poruke
+        public async Task SendPrivateMessage(
+                string senderId,
+                string receiverId,
+                string message)
+        {
+            // Pravimo objekat poruke koji ce biti sacuvan u bazi
+            var poruka = new PrivatniChat
+            {
+                PosiljalacId = senderId,
+                PrimalacId = receiverId,
+                Sadrzaj = message,
+                PoslatoU = DateTime.Now
+            };
+
+            // Dodajemo poruku u bazu
+            _context.PrivatnePoruke.Add(poruka);
+
+            // Cuvamo promene u bazi
+            await _context.SaveChangesAsync();
+
+            // Saljemo poruku korisniku koji prima poruku
+            // RecivePrivateMessage ce frontend slusati
+            await Clients.User(receiverId).SendAsync("RecivePrivateMessage", senderId, message);
+
+
+            // Saljemo poruku i posiljaocu kako bi je video odmah u svom chatu
+            await Clients.Caller.SendAsync("RecivePrivateMessage", senderId, message);
+        }
+
+        // ULAZAK U GRUPU
+        // Dodaje korisnika u odredjeni SignalR grupu
+        // Kada je korisnik u grupi moze da prima grupne poruke
+        public async Task JoinGroupe(string groupName)
+        {
+            // Contex.ConnectionId predstavlja trenutnu konekciju korisnika
+            // Dodajemo tu konekciju u grupu
+            await Groups.AddToGroupAsync(
+                    Context.ConnectionId,
+                    groupName);
+        }
+
+        // IZLAZAK IZ GRUPE
+        public async Task LeaveGroup(string groupName)
+        {
+            await Groups.RemoveFromGroupAsync( Context.ConnectionId, groupName);
+        }
+
+        // GRUPNE PORUKE
+        // Salje poruku svim korisnicima u grupi
+        public async Task SendGroupMessage(
+                int groupId,
+                string senderId,
+                string groupName,
+                string message)
+        {
+            var grupnaPoruka = new GrupnaPoruka
+            {
+                GrupaId = groupId,
+                PosiljalacId = senderId,
+                Poruka = message,
+                DatumSlanja = DateTime.Now
+            };
+
+            _context.GrupnePoruke.Add(grupnaPoruka);
+
+            await _context.SaveChangesAsync();
+
+            // Saljemo poruku SVIM clanovima grupe
+            await Clients.Group(groupName).SendAsync("ReceiveGroupMessage", senderId, message);
+        }
     }
 }
