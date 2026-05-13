@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProjekatSignalR.Data;
+using System.Security.Claims;
 
 namespace ProjekatSignalR.Controllers
 {
@@ -28,6 +29,29 @@ namespace ProjekatSignalR.Controllers
 
             // vracamo listu korisnika sa statusom OK
             return Ok(users);
+        }
+
+        // Ucitavanje istorije poruka
+        // GET /api/User/messages/{otherUserId}
+        [HttpGet("messages/{otherUserId}")]
+        public IActionResult GetMessages(string otherUserId)
+        {
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            Console.WriteLine("TrenutniUserId: " + currentUserId);
+
+            if(string.IsNullOrEmpty(currentUserId))
+            {
+                return Ok(new List<object>()); // vraca prazan niz
+            }
+
+            var messages = _context.PrivatnePoruke
+                .Where(p => (p.PosiljalacId == currentUserId && p.PrimalacId == otherUserId) ||
+                            (p.PosiljalacId == otherUserId && p.PrimalacId == currentUserId))
+                .OrderBy(p => p.PoslatoU)
+                .Select(p => new { p.PosiljalacId, p.Sadrzaj })
+                .ToList();
+
+            return Ok(messages);
         }
     }
 }

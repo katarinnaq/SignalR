@@ -44,5 +44,30 @@ namespace ProjekatSignalR.Controllers
             // Vracamo clana grupe kao rezultat
             return Ok(clan);
         }
+
+        // Ucitavanje grupa
+        // GET /api/Group
+        [HttpGet]
+        public IActionResult GetGroups()
+        {
+            var groups = _context.Grupe
+                .Select(g => new { g.Id, g.Naziv })
+                .ToList();
+
+            return Ok(groups);
+        }
+
+        // Ucitavanje istorije poruka
+        // GET /api/Group/messages/{groupId}
+        [HttpGet("messages/{groupId}")]
+        public IActionResult GetGroupMessages(int groupId)
+        {
+            var messages = _context.GrupnePoruke
+                .Where(m => m.GrupaId == groupId)
+                .Select(m => new { m.PosiljalacId, m.Poruka, m.DatumSlanja })
+                .ToList();
+
+            return Ok(messages);
+        }
     }
 }

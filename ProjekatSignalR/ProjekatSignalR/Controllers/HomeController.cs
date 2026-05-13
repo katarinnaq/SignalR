@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ProjekatSignalR.Models;
 using System.Diagnostics;
@@ -8,6 +9,8 @@ namespace ProjekatSignalR.Controllers
     {
         public IActionResult Index()
         {
+            // ovo vraca id trenutno ulogovanog korisnika
+            ViewBag.UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             return View();
         }
 
