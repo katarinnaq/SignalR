@@ -6,17 +6,23 @@ using ProjekatSignalR.Hubs;
 
 var builder = WebApplication.CreateBuilder(args); // ukljucujemo SignalR u projekat
 
-// Add services to the container.
+// ==== Konfiguracija baze ====
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+// ==== Identity konfiguracija ====
 builder.Services.AddDefaultIdentity<Korisnik>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>();
-builder.Services.AddControllersWithViews();
 
-builder.Services.AddSignalR(); // dodaj SignalR
+// ==== Dodavanje MVC i RazorPages ====
+builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
+
+// ==== Dodavanje SignalR ====
+builder.Services.AddSignalR();
+builder.Services.AddAuthentication();
 
 var app = builder.Build();
 
@@ -33,9 +39,15 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles(); // za css, js, slike itd.
 app.UseRouting();
 
+app.UseCors(); // za SignalR
+
+app.UseAuthentication(); // obavezno zbog Identity
 app.UseAuthorization();
+
+// ==== Mapiranje kontrolera i Razor Pages ====
 
 app.MapStaticAssets();
 
@@ -47,4 +59,8 @@ app.MapControllerRoute(
 app.MapRazorPages()
    .WithStaticAssets();
 
+// ==== Mapiranje SignalR ====
+app.MapHub<ChatHub>("/chathub"); // ruta na kojoj frontend povezuje SignalR
+
+// ==== Pokretanje aplikacije ====
 app.Run();

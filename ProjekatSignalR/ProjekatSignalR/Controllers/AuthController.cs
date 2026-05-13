@@ -77,7 +77,7 @@ namespace ProjekatSignalR.Controllers
         public string Password { get; set; }
     }
 
-    // Model za login
+    // Model za login   
     public class LoginModel
     {
         public string UserName { get; set; }

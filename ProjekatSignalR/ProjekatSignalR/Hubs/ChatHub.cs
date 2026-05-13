@@ -21,11 +21,14 @@ namespace ProjekatSignalR.Hubs
         // senderId = ko salje poruku
         // receiberId = ko prima poruku
         // message = sadrzaj poruke
-        public async Task SendPrivateMessage(
-                string senderId,
-                string receiverId,
-                string message)
+        public async Task SendPrivateMessage(string receiverId, string message)
         {
+            var senderId = Context.UserIdentifier; // ID trenutno ulogovanog korisnika
+
+            if (string.IsNullOrEmpty(receiverId))
+            {
+                throw new Exception("ReceverId nije validan.");
+            }
             // Pravimo objekat poruke koji ce biti sacuvan u bazi
             var poruka = new PrivatniChat
             {
@@ -44,7 +47,6 @@ namespace ProjekatSignalR.Hubs
             // Saljemo poruku korisniku koji prima poruku
             // RecivePrivateMessage ce frontend slusati
             await Clients.User(receiverId).SendAsync("RecivePrivateMessage", senderId, message);
-
 
             // Saljemo poruku i posiljaocu kako bi je video odmah u svom chatu
             await Clients.Caller.SendAsync("RecivePrivateMessage", senderId, message);

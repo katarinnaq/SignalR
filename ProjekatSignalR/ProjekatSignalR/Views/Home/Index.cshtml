@@ -4,5 +4,88 @@
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <p>Real-time aplikacija</p>
 </div>
+
+<hr />
+
+<h2>Lista korisnika</h2>
+<ul id="usersList"></ul>
+
+<h2>Privatni chat</h2>
+<div>
+    <select id="reciverSelect">
+        <option value="value">Izaberite korisnika</option>
+    </select>
+    <input type="text" id="messageInput" placeholder="Poruka..."/>
+    <button id="sendBtn">Posalji</button>
+</div>
+
+<h2>Poruke</h2>
+<ul id="messegesList"></ul>
+
+@section Scripts{
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+
+    <script>
+        // Id ulogovanog korisnika
+        let currentId = "";
+        
+        // Kreiramo SignalR konekciju
+        const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/chathub")
+        .build();
+
+        // Funkcija za prikazivanje poruka
+        function addMessage(text){
+            const li = document.createElement("li");
+            li.textContent = text;
+            document.getElementById("messagesList").appendChild(li);
+        }
+
+        // SignalR event za primanje privatnih poruka
+        connection.on("RecivePrivateMessage", (senderId, message) => {
+            addMessage(`${senderId}: ${message}`);
+        });
+
+        // Pokretanje konekcije
+        connection.start()
+            .then(() => {
+                console.log("SignalR konekcija uspesna");
+
+                // Ucitaj korisnike
+                fetch("/api/User")
+                    .then(Response = Response.json())
+                    .then(users => {
+                        const select = document.getElementById("reciverSelect");
+                        users.forEach(u => {
+                            if (u.id !== currentId)
+                            {
+                                const option = document.createElement("option");
+                                option.value = u.id;
+                                option.textContent = u.userName;
+                                select.appendChild(option);
+                            }
+                        });
+                    });
+            })
+            .catch(err => console.error(err.toString()));
+
+            // Slanje privatne poruke
+            document.getElementById("sendBtn").addEventListener("click", () => {
+                const reciverId = document.getElementById("reciverSelect").value;
+                const message = document.getElementById("messageInput").value;
+
+                if (!reciverId)
+                {
+                    alert("Izaberite korisnika!");
+                    return;
+                }
+
+                connection.invoke("SendPrivateMessage", currentId, reciverId, message)
+                    .catch(err => console.error(err.toString()));
+
+                document.getElementById("messageInput").value = ""; // osciti input
+            });
+    </script>
+}
