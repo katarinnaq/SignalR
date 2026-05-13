@@ -1,6 +1,30 @@
-﻿namespace ProjekatSignalR.Controllers
+﻿using Microsoft.AspNetCore.Mvc;
+using ProjekatSignalR.Data;
+
+namespace ProjekatSignalR.Controllers
 {
-    public class UserController
+    [ApiController] // oznaka da je Api kontroler
+    [Route("api/[controller]")] // ruta koja se koristi za pristup ovom kontroleru (npr. GET /api/User)
+    public class UserController : ControllerBase
     {
+        // DbContext preko kojeg pristupamo bazi podataka
+        private readonly ApplicationDbContext _context;
+
+        // Konstruktor koji koristi DbContext
+        public UserController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        // GET endpoint koji vraca listu svih korisnika
+        [HttpGet]
+        public IActionResult GetUsers()
+        {
+            // Dohvatanje svih korisnika iz Identity tabele User
+            var users = _context.Users.ToList();
+
+            // vracamo listu korisnika sa statusom OK
+            return Ok(users);
+        }
     }
 }
