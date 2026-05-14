@@ -1,6 +1,5 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
-    // ViewBag.UserId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
 }
 
 <div class="text-center">
@@ -71,6 +70,8 @@
         console.log("Trenutni korisnik: ", currentUserId);
         // Ime ulogovanog korisnika
         let currentUserName = '@User.Identity.Name';
+
+        let usersCache = [];
         
         // Kreiramo SignalR konekciju
         const connection = new signalR.HubConnectionBuilder()
@@ -92,7 +93,7 @@
         }
 
         // SignalR event za primanje privatnih poruka
-        connection.on("RecivePrivateMessage", (senderId, message) => {
+        connection.on("ReceivePrivateMessage", (senderId, message) => {
             addMessage(`${senderId === currentUserId ? 'Ja' : senderId}: ${message}`);
         });
 
@@ -112,7 +113,9 @@
                     .then(users => {
                         const select = document.getElementById("reciverSelect");
                         const usersList = document.getElementById("usersList");
+                        usersCache = users;
                         const groupUsersList = document.getElementById("groupUsersList");
+                        groupUsersList.innerHTML = "";
 
                         users.forEach(u => {
                             // drop down za privatni chat
@@ -157,7 +160,7 @@
                             // Lista grupa
                             const li = document.createElement("li");
                             li.textContent = g.naziv;
-                            document.getElementById("groupList").appendChild("li");
+                            document.getElementById("groupList").appendChild(li);
                         });
                     });
             })
@@ -232,13 +235,16 @@
                     return;
                 }
 
-                fetch("/api/Group/create", {
+                fetch("/api/CreateGroup/create", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ Naziv: groupName})
+                    body: JSON.stringify({ naziv: groupName, korisniciId: /* [...selectedUserIds, currentUserId] */ selectedUserIds.concat(currentUserId)
+                    })
                 })
                 .then(res => res.json())
                 .then(newGroup => {
+                    console.log("Nova grupa: ", newGroup);
+
                     // Dodaj u dropdown
                     const groupSelect = document.getElementById("groupSelect");
                     const option = document.createElement("option");
@@ -246,24 +252,17 @@
                     option.textContent = newGroup.naziv;
                     groupSelect.appendChild(option);
 
-                    // Dodaj sve selektovane korisnike u grupu
-                    selectedUserIds.forEach(userId => {
-                        fetch("/api/Group/add-member", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ GrupaId: newGroup.id, KorisnikId: currentUserId })
-                        });
-                    });
-
-                    // Automatski dodaj sebe u grupu
-                    fetch("/api/Group/add-member", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ GrupaId: newGroup.id, KorisnikId: currentUserId })
-                    });
+                    // Lista grupa
+                    const li = document.createElement("li");
+                    li.textContent = newGroup.naziv;
+                    document.getElementById("groupList").appendChild(li);
+                    
+                    document.getElementById("newGroupName").value = "";
+                    document.querySelectorAll("#groupUsersList input[type=checkbox]")
+                    .forEach(cb => cb.checked = false);
 
                     alert(`Grupa "${newGroup.naziv}" kreirana!`);
-                    document.getElementById("newGroupName").value = "";
+
                 })
                 .catch(err => console.error(err));
             });
@@ -271,7 +270,7 @@
             // Slanje grupne poruke
             document.getElementById("sendGroupBtn").addEventListener("click", () => {
                 const groupId = document.getElementById("groupSelect").value;
-                const groupName = document.getElementById("groupSelect").selectedOptions[0].text;
+                // const groupName = document.getElementById("groupSelect").selectedOptions[0].text;
                 const message = document.getElementById("groupMessageInput").value;
 
                 if (!groupId)
@@ -280,7 +279,7 @@
                     return;
                 }
 
-                connection.invoke("SendGroupMessage", parseInt(groupId), currentUserId, groupName, message)
+                connection.invoke("SendGroupMessage", parseInt(groupId), currentUserId, /* groupName, */ message)
                     .catch(err => console.error(err.toString()));
 
                 document.getElementById("groupMessageInput").value = ""; // osciti input
@@ -303,7 +302,28 @@
             }
 
             document.getElementById("groupSelect").addEventListener("change", (e) => {
-                loadGroupMessages(e.target.value);
+                const groupId = e.target.value;
+
+                const groupName = e.target.selectedOptions[0].text;
+
+                if(!groupId)
+                {
+                    // REST UI
+                    document.getElementById("groupMessageList").innerHTML = "";
+
+                    console.log("Nema izabrane grupe");
+                    return;
+                }
+
+                // Ulazak u SignalR grupu
+                connection.invoke("JoinGroup", groupId)
+                    .then(() => {
+                        console.log("Uspesno pridruzivanje grupi: ", groupName);
+                    })
+                    .catch(err => console.error(err));
+
+                // Ucitavanje istorije poruka
+                loadGroupMessages(groupId);
             });
 
     </script>

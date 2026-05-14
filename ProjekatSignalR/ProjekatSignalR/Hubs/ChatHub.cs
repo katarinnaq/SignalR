@@ -49,11 +49,11 @@ namespace ProjekatSignalR.Hubs
                 await _context.SaveChangesAsync();
 
                 // Saljemo poruku korisniku koji prima poruku
-                // RecivePrivateMessage ce frontend slusati
-                await Clients.User(receiverId).SendAsync("RecivePrivateMessage", senderId, message);
+                // ReceivePrivateMessage ce frontend slusati
+                await Clients.User(receiverId).SendAsync("ReceivePrivateMessage", senderId, message);
 
                 // Saljemo poruku i posiljaocu kako bi je video odmah u svom chatu
-                await Clients.Caller.SendAsync("RecivePrivateMessage", senderId, message);
+                await Clients.Caller.SendAsync("ReceivePrivateMessage", senderId, message);
             }
             catch (Exception ex)
             {
@@ -66,13 +66,11 @@ namespace ProjekatSignalR.Hubs
         // ULAZAK U GRUPU
         // Dodaje korisnika u odredjeni SignalR grupu
         // Kada je korisnik u grupi moze da prima grupne poruke
-        public async Task JoinGroupe(string groupName)
+        public async Task JoinGroup(string groupId)
         {
             // Contex.ConnectionId predstavlja trenutnu konekciju korisnika
             // Dodajemo tu konekciju u grupu
-            await Groups.AddToGroupAsync(
-                    Context.ConnectionId,
-                    groupName);
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupId.ToString());
         }
 
         // IZLAZAK IZ GRUPE
@@ -83,11 +81,7 @@ namespace ProjekatSignalR.Hubs
 
         // GRUPNE PORUKE
         // Salje poruku svim korisnicima u grupi
-        public async Task SendGroupMessage(
-                int groupId,
-                string senderId,
-                string groupName,
-                string message)
+        public async Task SendGroupMessage(int groupId, string senderId, /*string groupName,*/ string message)
         {
             var grupnaPoruka = new GrupnaPoruka
             {
@@ -102,7 +96,7 @@ namespace ProjekatSignalR.Hubs
             await _context.SaveChangesAsync();
 
             // Saljemo poruku SVIM clanovima grupe
-            await Clients.Group(groupName).SendAsync("ReceiveGroupMessage", senderId, message);
+            await Clients.Group(groupId.ToString()).SendAsync("ReceiveGroupMessage", senderId, message);
         }
     }
 }
