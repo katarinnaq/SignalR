@@ -226,7 +226,8 @@
                 }
 
                 // Skupljanje svih selektovanih korisnika
-                const selectedUserIds = Array.from(document.querySelectorAll("#groupUsersList input[type=checkbox]:checked"))
+                const selectedUserIds = Array.from(document.querySelectorAll("#groupUsersList input[type=checkbox]"))
+                .filter(cb => cb.checked)
                 .map(cb => cb.value);
 
                 if(!selectedUserIds.length)
@@ -235,10 +236,13 @@
                     return;
                 }
 
+                console.log("selected useres: ", selectedUserIds);
+                console.log("current user: ", currentUserId);
+
                 fetch("/api/CreateGroup/create", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ naziv: groupName, korisniciId: /* [...selectedUserIds, currentUserId] */ selectedUserIds.concat(currentUserId)
+                    body: JSON.stringify({ naziv: groupName, korisniciId:  selectedUserIds.concat(currentUserId)
                     })
                 })
                 .then(res => res.json())
@@ -270,7 +274,6 @@
             // Slanje grupne poruke
             document.getElementById("sendGroupBtn").addEventListener("click", () => {
                 const groupId = document.getElementById("groupSelect").value;
-                // const groupName = document.getElementById("groupSelect").selectedOptions[0].text;
                 const message = document.getElementById("groupMessageInput").value;
 
                 if (!groupId)
@@ -279,7 +282,7 @@
                     return;
                 }
 
-                connection.invoke("SendGroupMessage", parseInt(groupId), currentUserId, /* groupName, */ message)
+                connection.invoke("SendGroupMessage", parseInt(groupId), currentUserId, message)
                     .catch(err => console.error(err.toString()));
 
                 document.getElementById("groupMessageInput").value = ""; // osciti input
@@ -314,13 +317,6 @@
                     console.log("Nema izabrane grupe");
                     return;
                 }
-
-                // Ulazak u SignalR grupu
-                connection.invoke("JoinGroup", groupId)
-                    .then(() => {
-                        console.log("Uspesno pridruzivanje grupi: ", groupName);
-                    })
-                    .catch(err => console.error(err));
 
                 // Ucitavanje istorije poruka
                 loadGroupMessages(groupId);

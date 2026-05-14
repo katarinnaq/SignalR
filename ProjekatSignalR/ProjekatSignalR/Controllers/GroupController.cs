@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProjekatSignalR.Data;
 using ProjekatSignalR.Models;
+using System.Security.Claims;
 
 namespace ProjekatSignalR.Controllers
 {
@@ -20,8 +21,11 @@ namespace ProjekatSignalR.Controllers
         [HttpGet]
         public IActionResult GetGroups()
         {
-            var groups = _context.Grupe
-                .Select(g => new { g.Id, g.Naziv })
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var groups = _context.ClanoviGrupe
+                .Where(x => x.KorisnikId == userId)
+                .Select(x => new { x.Grupa.Id, x.Grupa.Naziv })
+                .Distinct()
                 .ToList();
 
             return Ok(groups);

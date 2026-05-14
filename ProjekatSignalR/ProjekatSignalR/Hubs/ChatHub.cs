@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using ProjekatSignalR.Data;
 using ProjekatSignalR.Models;
+using System.Text.RegularExpressions;
 
 namespace ProjekatSignalR.Hubs
 {
@@ -63,20 +64,20 @@ namespace ProjekatSignalR.Hubs
 
         }
 
-        // ULAZAK U GRUPU
-        // Dodaje korisnika u odredjeni SignalR grupu
-        // Kada je korisnik u grupi moze da prima grupne poruke
-        public async Task JoinGroup(string groupId)
+        public override async Task OnConnectedAsync()
         {
-            // Contex.ConnectionId predstavlja trenutnu konekciju korisnika
-            // Dodajemo tu konekciju u grupu
-            await Groups.AddToGroupAsync(Context.ConnectionId, groupId.ToString());
-        }
+            var userId = Context.UserIdentifier;
+            var groups = _context.ClanoviGrupe
+                .Where(x => x.KorisnikId == userId)
+                .Select(x =>  x.GrupaId)
+                .ToList();
 
-        // IZLAZAK IZ GRUPE
-        public async Task LeaveGroup(string groupName)
-        {
-            await Groups.RemoveFromGroupAsync( Context.ConnectionId, groupName);
+            foreach(var groupId in groups)
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, groupId.ToString());
+            }
+
+            await base.OnConnectedAsync();
         }
 
         // GRUPNE PORUKE

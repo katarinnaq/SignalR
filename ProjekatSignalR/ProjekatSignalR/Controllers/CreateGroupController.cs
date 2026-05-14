@@ -35,8 +35,10 @@ namespace ProjekatSignalR.Controllers
 
             await _context.SaveChangesAsync();
 
+            var sviKorisnici = kreiranjegrupa.KorisniciId.Distinct();
+
             // Dodavanje clanova
-            foreach(var korisnikId in kreiranjegrupa.KorisniciId)
+            foreach(var korisnikId in /*kreiranjegrupa.KorisniciId*/ sviKorisnici)
             {
                 var clan = new ClanoviGrupe
                 {
