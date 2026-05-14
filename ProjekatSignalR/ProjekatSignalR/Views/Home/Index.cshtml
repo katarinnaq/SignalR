@@ -92,14 +92,23 @@
             document.getElementById("groupMessagesList").appendChild(li);
         }
 
+        // Funkcija za dovlacenje imena
+        function getUserName(userId)
+        {
+            const user = usersCache.find(u => u.id === userId);
+            return user ? user.userName : userId;
+        }
+
         // SignalR event za primanje privatnih poruka
         connection.on("ReceivePrivateMessage", (senderId, message) => {
-            addMessage(`${senderId === currentUserId ? 'Ja' : senderId}: ${message}`);
+            const senderName = senderId === currentUserId ? 'Ja' : getUserName(senderId);
+            addMessage(`${senderName}: ${message}`);
         });
 
         // SignalR event za primanje grupnih poruka
         connection.on("ReceiveGroupMessage", (senderId, message) => {
-            addGroupMessage(`${senderId === currentUserId ? 'Ja' : senderId}: ${message}`);
+            const senderName = senderId === currentUserId ? 'Ja' : getUserName(senderId);
+            addGroupMessage(`${senderName}: ${message}`);
         });
 
         // Pokretanje konekcije
@@ -199,7 +208,7 @@
                     list.innerHTML = "";
                     console.log(messages);
                     messages.forEach(m => {
-                        const sender = m.posiljalacId === currentUserId ? 'Ja' : m.posiljalacId;
+                        const sender = m.posiljalacId === currentUserId ? 'Ja' : getUserName(m.posiljalacId);
                         const li = document.createElement("li");
                         li.textContent = `${sender}: ${m.sadrzaj}`;
                         list.appendChild(li);
@@ -212,7 +221,17 @@
             }
 
             document.getElementById("reciverSelect").addEventListener("change", (e) => {
-                loadPrivateMessages(e.target.value);
+                const userId = e.target.value;
+                
+                const list = document.getElementById("messagesList");
+
+                if(!userId)
+                {
+                    list.innerHTML = ""; // reset ui
+                    return;
+                }
+
+                loadPrivateMessages(userId);
             });
 
             // Kreiranje nove grupe
@@ -296,7 +315,7 @@
                     const list = document.getElementById("groupMessagesList");
                     list.innerHTML = "";
                     messages.forEach(m => {
-                        const sender = m.posiljalacId === currentUserId ? 'Ja' : m.posiljalacId;
+                        const sender = m.posiljalacId === currentUserId ? 'Ja' : getUserName(m.posiljalacId);
                         const li = document.createElement("li");
                         li.textContent = `${sender}: ${m.poruka}`;
                         list.appendChild(li);
@@ -307,12 +326,12 @@
             document.getElementById("groupSelect").addEventListener("change", (e) => {
                 const groupId = e.target.value;
 
-                const groupName = e.target.selectedOptions[0].text;
+                const list = document.getElementById("groupMessagesList");
 
                 if(!groupId)
                 {
                     // REST UI
-                    document.getElementById("groupMessageList").innerHTML = "";
+                    list.innerHTML = "";
 
                     console.log("Nema izabrane grupe");
                     return;
