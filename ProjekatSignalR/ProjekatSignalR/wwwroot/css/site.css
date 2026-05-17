@@ -8,24 +8,65 @@ html {
   }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
 html {
   position: relative;
   min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+  margin-bottom: 0;
+  background: linear-gradient(135deg, #0f172a, #1e1b4b, #312e81);
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  min-height: 100vh;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+
+/* navigacija */
+.navbar {
+    background: rgba(15, 23, 42, 0.9) !important;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+.navbar-brand {
+    color: white !important;
+    font-size: 28px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+}
+
+.nav-link {
+    color: #cbd5e1 !important;
+    transition: 0.3s;
+}
+
+.nav-link:hover {
+    color: #a855f7 !important;
+}
+
+/* dugmad */
+button {
+    background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
+    border: none !important;
+    color: white !important;
+    padding: 7px 20px;
+    border-radius: 40px;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: linear-gradient(135deg, #3b82f6, #9333ea) !important;
+}
+
+/* unos */
+input, select {
+    background: rgba(30, 41, 59, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: white !important;
+    border-radius: 40px !important;
+    padding: 10px !important;
+}
+
+/* placeholder */
+input::placeholder {
+    color: #94a3b8 !important;
 }
