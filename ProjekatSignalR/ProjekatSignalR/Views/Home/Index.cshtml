@@ -2,33 +2,69 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Real-time aplikacija</p>
-</div>
+<div class="chat-app">
 
-<hr />
+    <!-- sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-top">
+            <div class="sidebar-logo">
+                <i class="bi bi-chat-dots-fill"></i>
+            </div>
+        </div>
 
-<h2>Lista korisnika</h2>
-<ul id="usersList"></ul>
+        <div class="sidebar-logo">
+            <i class="bi bi-chat-dots-fill"></i>
+        </div>
 
-<hr />
+        <div class="sidebar-icon active">
+            <i class="bi bi-people-fill"></i>
+        </div>
 
-<h2>Privatni chat</h2>
-<div>
-    <select id="reciverSelect">
-        <option value="">Izaberite korisnika</option>
-    </select>
-    <input type="text" id="messageInput" placeholder="Poruka..."/>
-    <button id="sendBtn">Posalji</button>
-</div>
+        <div class="sidebar-menu">
+            <div class="sidebar-icon active">
+                <i class="bi bi-chat-left-text-fill"></i>
+            </div>
 
-<hr />
+            <div class="sidebar-icon">
+                <i class="bi bi-people-fill"></i>
+            </div>
 
-<h2>Poruke</h2>
-<ul id="messagesList"></ul>
+            <div class="sidebar-icon">
+                <i class="bi bi-bell-fill"></i>
+            </div>
 
-<hr />
+            <div class="sidebar-icon">
+                <i class="bi bi-gear-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-list">
+        <h2>Lista korisnika</h2>
+        <ul id="usersList"></ul>
+
+        <h2>Privatni chat</h2>
+        <div>
+            <select id="reciverSelect">
+                <option value="">Izaberite korisnika</option>
+            </select>
+            <input type="text" id="messageInput" placeholder="Poruka..."/>
+            <button id="sendBtn">Posalji</button>
+        </div>
+    </div>
+
+    <div class="chat-window">
+        <div class="chat-header">
+            <div class="chat-user">
+                <div class="online-dot"></div>
+                <span>Razgovor</span>
+            </div>
+        </div>
+
+        <div class="message-container">
+            <ul id="messagesList"></ul>
+        </div>
+
 
 <h2>Kreiranje nove grupe</h2>
 <div>
@@ -40,26 +76,33 @@
     </div>
 </div>
 
-<hr />
 
 <h2>Lista grupa</h2>
 <ul id="groupList"></ul>
 
-<hr />
 
 <h2>Grupe</h2>
 <div>
     <select id="groupSelect">
         <option value="">Izaberite grupu</option>
     </select>
-    <input type="text" id="groupMessageInput" placeholder="Poruka grupi..."/>
-    <button id="sendGroupBtn">Posalji poruku u grupu</button>
+    <div class="message-input-container">
+        <input type="text"
+                id="groupMessageInput"
+                placeholder="Poruka grupi..." />
+
+        <button id="sendGroupBtn">
+            <i class="bi bi-send-fill"></i>
+        </button>
+    </div>
 </div>
 
-<hr />
 
 <h2>Poruke</h2>
 <ul id="groupMessagesList"></ul>
+
+</div>
+</div>
 
 @section Scripts{
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
