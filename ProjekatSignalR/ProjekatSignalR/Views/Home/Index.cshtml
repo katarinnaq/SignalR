@@ -1,58 +1,109 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Početna";
 }
 
 <div class="chat-app">
 
     <!-- sidebar -->
     <div class="sidebar">
+
         <div class="sidebar-top">
             <div class="sidebar-logo">
-                <i class="bi bi-chat-dots-fill"></i>
+                <img src="/images/logoChatSphere.png" alt="ChatSphere Logo">
             </div>
-        </div>
-
-        <div class="sidebar-logo">
-            <i class="bi bi-chat-dots-fill"></i>
-        </div>
-
-        <div class="sidebar-icon active">
-            <i class="bi bi-people-fill"></i>
         </div>
 
         <div class="sidebar-menu">
-            <div class="sidebar-icon active">
+
+            <!-- cetovi -->
+            <div class="sidebar-icon active" id="chatBtn">
                 <i class="bi bi-chat-left-text-fill"></i>
             </div>
 
-            <div class="sidebar-icon">
+            <!-- grupe -->
+            <div class="sidebar-icon" id="groupBtn">
                 <i class="bi bi-people-fill"></i>
             </div>
 
-            <div class="sidebar-icon">
-                <i class="bi bi-bell-fill"></i>
+            <!-- korisnici -->
+            <div class="sidebar-icon" id="usersBtn">
+                <i class="bi bi-person-lines-fill"></i>
             </div>
 
+            <!-- podesavanja -->
             <div class="sidebar-icon">
                 <i class="bi bi-gear-fill"></i>
             </div>
+
         </div>
     </div>
 
+    <!-- levi panel -->
     <div class="chat-list">
-        <h2>Lista korisnika</h2>
-        <ul id="usersList"></ul>
 
-        <h2>Privatni chat</h2>
-        <div>
+        <div id="chatPanel">
+            <h2>Privatni chat</h2>
+
             <select id="reciverSelect">
                 <option value="">Izaberite korisnika</option>
             </select>
-            <input type="text" id="messageInput" placeholder="Poruka..."/>
-            <button id="sendBtn">Posalji</button>
+
+            <div class ="message-input-container">
+                <input type="text"
+                        id = "messageInput"
+                        placeholder = "Poruka..." />
+
+                <button id="sendBtn">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </div>
+
+            <h2>Lista korisnika</h2>
+            <ul id="usersList"></ul>
+        </div>
+
+        <!-- grupni panel -->
+        <div id="groupPanel" style="display:none;">
+            <h2>Kreiranje nove grupe</h2>
+            <div>
+                <input type="text" id="newGroupName" placeholder="Ime grupe..."/>
+
+                <button id="createGroupBtn">Kreiraj grupu</button>
+
+                <div id="groupUsersContainer">
+                    <p>Izaberite korisnike za grupu:</p>
+                    <ul id="groupUsersList"></ul>
+                </div>
+            </div>
+
+
+            <h2>Lista grupa</h2>
+            <ul id="groupList"></ul>
+            <h2>Grupe</h2>
+
+            <select id="groupSelect">
+                <option value="">Izaberite grupu</option>
+            </select>
+
+            <div class="message-input-container">
+                <input type="text"
+                       id="groupMessageInput"
+                        placeholder="Poruka grupi..." />
+
+                <button id="sendGroupBtn">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- korisnicki panel -->
+        <div id="usersPanel" style="display:none;">
+            <h2>Svi korisnici</h2>
+            <ul id="allUsersList"></ul>
         </div>
     </div>
 
+    <!-- desni panel -->
     <div class="chat-window">
         <div class="chat-header">
             <div class="chat-user">
@@ -61,59 +112,73 @@
             </div>
         </div>
 
-        <div class="message-container">
+        <!-- privatne poruke -->
+        <div class="messages-container">
             <ul id="messagesList"></ul>
         </div>
 
-
-<h2>Kreiranje nove grupe</h2>
-<div>
-    <input type="text" id="newGroupName" placeholder="Ime grupe..."/>
-    <button id="createGroupBtn">Kreiraj grupu</button>
-    <div id="groupUsersContainer">
-        <p>Izaberite korisnike za grupu: </p>
-        <ul id="groupUsersList"></ul>
+        <!-- grupne poruke -->
+        <div class="group-messages-container">
+            <ul id="groupMessagesList"></ul>
+        </div>
     </div>
-</div>
-
-
-<h2>Lista grupa</h2>
-<ul id="groupList"></ul>
-
-
-<h2>Grupe</h2>
-<div>
-    <select id="groupSelect">
-        <option value="">Izaberite grupu</option>
-    </select>
-    <div class="message-input-container">
-        <input type="text"
-                id="groupMessageInput"
-                placeholder="Poruka grupi..." />
-
-        <button id="sendGroupBtn">
-            <i class="bi bi-send-fill"></i>
-        </button>
-    </div>
-</div>
-
-
-<h2>Poruke</h2>
-<ul id="groupMessagesList"></ul>
-
-</div>
 </div>
 
 @section Scripts{
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
 
     <script>
+        // sidebar
+
+        const chatBtn = document.getElementById("chatBtn");
+        const groupBtn = document.getElementById("groupBtn");
+        const usersBtn = document.getElementById("usersBtn");
+
+        const chatPanel = document.getElementById("chatPanel");
+        const groupPanel = document.getElementById("groupPanel");
+        const usersPanel = document.getElementById("usersPanel");
+
+        function resetSidebar() {
+            document.querySelectorAll(".sidebar-icon")
+                .forEach(icon => icon.classList.remove("active"));
+        }
+
+        chatBtn.addEventListener("click", () => {
+            resetSidebar();
+            chatBtn.classList.add("active");
+
+            chatPanel.style.display = "block";
+            groupPanel.style.display = "none";
+            usersPanel.style.display = "none";
+        });
+
+        groupBtn.addEventListener("click", () => {
+            resetSidebar();
+            groupBtn.classList.add("active");
+
+            chatPanel.style.display = "none";
+            groupPanel.style.display = "block";
+            usersPanel.style.display = "none";
+        });
+
+        usersBtn.addEventListener("click", () => {
+            resetSidebar();
+            usersBtn.classList.add("active");
+
+            chatPanel.style.display = "none";
+            groupPanel.style.display = "none";
+            usersPanel.style.display = "block"; 
+        });
+    </script>
+
+
+    <script>
         // Id korisnika
         let currentUserId = '@ViewBag.UserId';
         console.log("Trenutni korisnik: ", currentUserId);
+
         // Ime ulogovanog korisnika
         let currentUserName = '@User.Identity.Name';
-
         let usersCache = [];
         
         // Kreiramo SignalR konekciju

@@ -99,16 +99,10 @@ input::placeholder {
     gap: 20px;
 }
 
-.sidebar-logo {
-    width: 55px;
-    height: 55px;
-    border-radius: 20px;
-    background: linear-gradient(135deg, #2563eb, #7c3aed);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    color: white;
+.sidebar-logo img {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
 }
 
 .sidebar-icon {
@@ -240,3 +234,4 @@ input::placeholder {
     background: rgba(255, 255, 255, 0.08);
     transform: translateX(4px);
 }
+
