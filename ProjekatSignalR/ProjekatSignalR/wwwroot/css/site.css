@@ -33,6 +33,7 @@ body {
     font-size: 28px;
     font-weight: 600;
     font-family: 'Poppins', sans-serif;
+    margin-left: 20px;
 }
 
 .nav-link {
@@ -83,7 +84,6 @@ input::placeholder {
 .sidebar {
     width: 90px;
     background: rgba(15, 23, 42, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 30px;
     backdrop-filter: blur(20px);
     display: flex;
@@ -234,4 +234,25 @@ input::placeholder {
     background: rgba(255, 255, 255, 0.08);
     transform: translateX(4px);
 }
+
+.auth-icons {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-right: 20px;
+}
+
+.auth-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
 
