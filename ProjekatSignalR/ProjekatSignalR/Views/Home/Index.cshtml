@@ -47,16 +47,6 @@
             <select id="reciverSelect">
                 <option value="">Izaberite korisnika</option>
             </select>
-
-            <div class ="message-input-container">
-                <input type="text"
-                        id = "messageInput"
-                        placeholder = "Poruka..." />
-
-                <button id="sendBtn">
-                    <i class="bi bi-send-fill"></i>
-                </button>
-            </div>
         </div>
 
         <!-- grupni panel -->
@@ -106,13 +96,22 @@
         <div class="chat-header">
             <div class="chat-user">
                 <div class="online-dot"></div>
-                <span>Razgovor</span>
+                <span id="activeChatUser">Korisnik</span>
             </div>
         </div>
 
         <!-- privatne poruke -->
         <div class="messages-container">
             <ul id="messagesList"></ul>
+
+            <div class="message-input-container">
+                <input type="text"
+                        id="messageInput"
+                        placeholder="Pošalji poruku..."/>
+                <button id="sendBtn">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </div>
         </div>
 
         <!-- grupne poruke -->
@@ -188,6 +187,15 @@
         function addMessage(text){
             const li = document.createElement("li");
             li.textContent = text;
+            
+            // moje poruke
+            if(text.startsWith("Ja:")) {
+                li.classList.add("my-message");
+            }
+            else {
+                li.classList.add("other-message");
+            }
+
             document.getElementById("messagesList").appendChild(li);
         }
 
@@ -313,6 +321,7 @@
                     const list = document.getElementById("messagesList");
                     list.innerHTML = "";
                     console.log(messages);
+                    list.innerHTML = "";
                     messages.forEach(m => {
                         const sender = m.posiljalacId === currentUserId ? 'Ja' : getUserName(m.posiljalacId);
                         const li = document.createElement("li");
@@ -422,9 +431,7 @@
                     list.innerHTML = "";
                     messages.forEach(m => {
                         const sender = m.posiljalacId === currentUserId ? 'Ja' : getUserName(m.posiljalacId);
-                        const li = document.createElement("li");
-                        li.textContent = `${sender}: ${m.poruka}`;
-                        list.appendChild(li);
+                        addMessage(`${sender}: ${m.sadrzaj}`);
                     });
                 });
             }
