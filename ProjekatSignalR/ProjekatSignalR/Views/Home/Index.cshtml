@@ -44,9 +44,8 @@
         <div id="chatPanel">
             <h2>Privatni chat</h2>
 
-            <select id="reciverSelect">
-                <option value="">Izaberite korisnika</option>
-            </select>
+            <ul id="privateChatsList" class="chat-items">
+            </ul>
         </div>
 
         <!-- grupni panel -->
@@ -68,9 +67,8 @@
             <ul id="groupList"></ul>
             <h2>Grupe</h2>
 
-            <select id="groupSelect">
-                <option value="">Izaberite grupu</option>
-            </select>
+            <ul id="groupChatsList" class="chat-items">
+            </ul>
 
             <div class="message-input-container">
                 <input type="text"
@@ -134,6 +132,9 @@
         const chatPanel = document.getElementById("chatPanel");
         const groupPanel = document.getElementById("groupPanel");
         const usersPanel = document.getElementById("usersPanel");
+
+        let activePrivateUserId = null;
+        let activeGroupId = null;
 
         function resetSidebar() {
             document.querySelectorAll(".sidebar-icon")
@@ -234,23 +235,48 @@
                 fetch("/api/User")
                     .then(response => response.json())
                     .then(users => {
-                        const select = document.getElementById("reciverSelect");
+                        console.log(users);
+                        // const select = document.getElementById("reciverSelect");
                         const usersList = document.getElementById("usersList");
                         usersCache = users;
                         const groupUsersList = document.getElementById("groupUsersList");
                         groupUsersList.innerHTML = "";
 
                         users.forEach(u => {
-                            // drop down za privatni chat
-                            const option = document.createElement("option");
-                            option.value = u.id;
-                            option.textContent = u.userName;
-                            select.appendChild(option);
+                            // lista za privatni chat
+                            const li = document.createElement("li");
+
+                            li.innerHTML = `
+                                <div class = "chat-avatar">
+                                    ${u.userName.charAt(0).toUpperCase()}
+                                </div>
+
+                                <div>
+                                    <strong>${u.userName}</strong>
+                                </div>
+                            `;
+
+                            li.addEventListener("click", () => {
+                                activePrivateUserId = u.id;
+                                activeGroupId = null;
+
+                                document.querySelectorAll("#privateChatsList li")
+                                    .forEach(x => x.classList.remove("active-chat"));
+
+                                li.classList.add("active-chat");
+
+                                document.getElementById("activeChatUser").textContent = u.userName;
+
+                                loadPrivateMessages(u.id);
+                            });
+
+                            document.getElementById("privateChatsList").appendChild(li);
+
 
                             // lista korisnika
-                            const li = document.createElement("li");
-                            li.textContent = u.userName;
-                            usersList.appendChild(li);
+                            const userLi = document.createElement("li");
+                            userLi.textContent = u.userName;
+                            usersList.appendChild(userLi);
 
                             // checkbox za novu grupu
                             const liGroup = document.createElement("li");
@@ -272,18 +298,43 @@
                 fetch("/api/Group")
                     .then(res => res.json())
                     .then(groups => {
-                        const select = document.getElementById("groupSelect");
+                        // const select = document.getElementById("groupSelect");
                         groups.forEach(g => {
-                            // dropdown
-                            const option = document.createElement("option");
-                            option.value = g.id;
-                            option.textContent = g.naziv;
-                            select.appendChild(option);
+                            // lista grupa
+                            const li = document.createElement("li");
+
+                            li.innerHTML = `
+                                <div class="chat-avatar">
+                                    <i class="bi bi-people-fill"></i>
+                                </div>
+
+                                <div>
+                                    <strong>${g.naziv}</strong>
+                                </div>
+                            `;
+
+                            li.addEventListener("click", () => {
+
+                                activeGroupId = g.id;
+                                activePrivateUserId = null;
+
+                                document.querySelectorAll("#groupChatsList li")
+                                .forEach(x => x.classList.remove("active-chat"));
+
+                                li.classList.add("active-chat");
+
+                                document.getElementById("activeChatUser").textContent = g.naziv;
+
+                                loadGroupMessages(g.id);
+                            });
+
+                            document.getElementById("groupChatsList")
+                                .appendChild(li);
 
                             // Lista grupa
-                            const li = document.createElement("li");
-                            li.textContent = g.naziv;
-                            document.getElementById("groupList").appendChild(li);
+                            const groupLi = document.createElement("li");
+                            groupLi.textContent = g.naziv;
+                            document.getElementById("groupList").appendChild(groupLi);
                         });
                     });
             })
@@ -291,7 +342,7 @@
 
             // Slanje privatne poruke
             document.getElementById("sendBtn").addEventListener("click", () => {
-                const reciverId = document.getElementById("reciverSelect").value;
+                const reciverId = activePrivateUserId;
                 const message = document.getElementById("messageInput").value;
 
                 if (!reciverId)
@@ -335,19 +386,19 @@
                 });
             }
 
-            document.getElementById("reciverSelect").addEventListener("change", (e) => {
-                const userId = e.target.value;
+            // document.getElementById("reciverSelect").addEventListener("change", (e) => {
+            //     const userId = e.target.value;
                 
-                const list = document.getElementById("messagesList");
+            //     const list = document.getElementById("messagesList");
 
-                if(!userId)
-                {
-                    list.innerHTML = ""; // reset ui
-                    return;
-                }
+            //     if(!userId)
+            //     {
+            //         list.innerHTML = ""; reset ui
+            //         return;
+            //     }
 
-                loadPrivateMessages(userId);
-            });
+            //     loadPrivateMessages(userId);
+            // });
 
             // Kreiranje nove grupe
             document.getElementById("createGroupBtn").addEventListener("click", () => {
@@ -384,11 +435,11 @@
                     console.log("Nova grupa: ", newGroup);
 
                     // Dodaj u dropdown
-                    const groupSelect = document.getElementById("groupSelect");
-                    const option = document.createElement("option");
-                    option.value = newGroup.id;
-                    option.textContent = newGroup.naziv;
-                    groupSelect.appendChild(option);
+                    // const groupSelect = document.getElementById("groupSelect");
+                    // const option = document.createElement("option");
+                    // option.value = newGroup.id;
+                    // option.textContent = newGroup.naziv;
+                    // groupSelect.appendChild(option);
 
                     // Lista grupa
                     const li = document.createElement("li");
@@ -407,7 +458,7 @@
 
             // Slanje grupne poruke
             document.getElementById("sendGroupBtn").addEventListener("click", () => {
-                const groupId = document.getElementById("groupSelect").value;
+                const groupId = activeGroupId;
                 const message = document.getElementById("groupMessageInput").value;
 
                 if (!groupId)
@@ -431,28 +482,28 @@
                     list.innerHTML = "";
                     messages.forEach(m => {
                         const sender = m.posiljalacId === currentUserId ? 'Ja' : getUserName(m.posiljalacId);
-                        addMessage(`${sender}: ${m.sadrzaj}`);
+                        addGroupMessage(`${sender}: ${m.poruka}`);
                     });
                 });
             }
 
-            document.getElementById("groupSelect").addEventListener("change", (e) => {
-                const groupId = e.target.value;
+            // document.getElementById("groupSelect").addEventListener("change", (e) => {
+            //     const groupId = e.target.value;
 
-                const list = document.getElementById("groupMessagesList");
+            //     const list = document.getElementById("groupMessagesList");
 
-                if(!groupId)
-                {
-                    // REST UI
-                    list.innerHTML = "";
+            //     if(!groupId)
+            //     {
+            //         REST UI
+            //         list.innerHTML = "";
 
-                    console.log("Nema izabrane grupe");
-                    return;
-                }
+            //         console.log("Nema izabrane grupe");
+            //         return;
+            //     }
 
-                // Ucitavanje istorije poruka
-                loadGroupMessages(groupId);
-            });
+            //     Ucitavanje istorije poruka
+            //     loadGroupMessages(groupId);
+            // });
 
     </script>
 }
