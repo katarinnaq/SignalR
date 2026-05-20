@@ -101,21 +101,20 @@
         <!-- privatne poruke -->
         <div class="messages-container">
             <ul id="messagesList"></ul>
-
-            <div class="message-input-container">
-                <input type="text"
-                        id="messageInput"
-                        placeholder="Pošalji poruku..."/>
-                <button id="sendBtn">
-                    <i class="bi bi-send-fill"></i>
-                </button>
-            </div>
+        </div>
+        <div class="message-input-container">
+            <input type="text"
+                   id="messageInput"
+                   placeholder="Pošalji poruku..." />
+            <button id="sendBtn">
+                <i class="bi bi-send-fill"></i>
+            </button>
         </div>
 
         <!-- grupne poruke -->
-        <div class="group-messages-container">
+        @* <div class="group-messages-container">
             <ul id="groupMessagesList"></ul>
-        </div>
+        </div> *@
     </div>
 </div>
 
@@ -328,8 +327,7 @@
                                 loadGroupMessages(g.id);
                             });
 
-                            document.getElementById("groupChatsList")
-                                .appendChild(li);
+                            document.getElementById("groupChatsList").appendChild(li);
 
                             // Lista grupa
                             const groupLi = document.createElement("li");

@@ -78,7 +78,7 @@ input::placeholder {
     display: flex;
     gap: 20px;
     padding: 20px;
-    height: calc(100vh - 100px);
+    height: calc(100vh - 90px);
 }
 
 /* sidebar */
@@ -150,6 +150,7 @@ input::placeholder {
     display: flex;
     flex-direction: column;
     min-width: 0;
+    height: 100%;
 }
 
 .chat-header {
@@ -173,10 +174,12 @@ input::placeholder {
 }
 
 /* poruke */
-.messages-container, .group-messages-container {
+.messages-container {
     flex: 1;
-    padding: 10px 0;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
 }
 
 #messagesList, #groupMessagesList {
@@ -191,7 +194,13 @@ input::placeholder {
 .message-input-container {
     display: flex;
     gap: 10px;
-    margin-top: 20px;
+    margin-top: auto;
+    padding-top: 20px;
+    justify-content: space-between;
+}
+
+#messageInput {
+    width: 100%;
 }
 
 .my-message {
@@ -303,6 +312,12 @@ h2 {
 
 .login {
     margin-left: 20px;
+}
+
+#usersList, #privateChatsList, #groupChatsList, #groupList, #groupUsersList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 
