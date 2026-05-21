@@ -214,6 +214,7 @@ input::placeholder {
     padding: 14px 18px;
     border-radius: 20px 20px 6px 20px !important;
     max-width: 60%;
+    margin-left: auto;
 }
 
 .other-message {
@@ -223,6 +224,7 @@ input::placeholder {
     padding: 14px 18px;
     border-radius: 20px 20px 6px 20px !important;
     max-width: 60%;
+    margin-right: auto;
 }
 
 /* responsive */
@@ -242,7 +244,7 @@ input::placeholder {
     }
 }
 
-#userList, #groupList, #groupUsersList {
+#usersList, #groupList, #groupUsersList {
     list-style: none;
     padding: 0;
 }
@@ -329,14 +331,4 @@ h2 {
     width: 100%;
 }
 
-my-message {
-    margin-left: auto;
-    background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
-    color: white;
-}
-
-.other-message {
-    margin-right: auto;
-    background: rgba(255, 255, 255, 0.08);
-}
 
