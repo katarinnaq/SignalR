@@ -263,23 +263,20 @@
         }
 
         function addMessage(text) {
-
             const li = document.createElement("li");
-
-            li.textContent = text;
-
-            if (text.startsWith("Ja:")) {
-
+            
+            // moje poruke
+            if(text.startsWith("Ja:")) {
                 li.classList.add("my-message");
+                li.textContent = text.replace("Ja:", "").trim();
             }
+            // tudje poruke
             else {
-
                 li.classList.add("other-message");
+                li.textContent = text;
             }
 
-            document
-                .getElementById("messagesList")
-                .appendChild(li);
+            document.getElementById("messagesList").appendChild(li);
         }
 
         function addGroupMessage(text) {
@@ -545,21 +542,15 @@
                         document.getElementById("messagesList");
 
                     list.innerHTML = "";
-
+                    // izmenjeno
                     messages.forEach(m => {
 
                         const sender =
                             m.posiljalacId === currentUserId
-                                ? "Ja"
-                                : getUserName(m.posiljalacId);
+                            ? 'Ja'
+                            : getUserName(m.posiljalacId);
 
-                        const li =
-                            document.createElement("li");
-
-                        li.textContent =
-                            `${sender}: ${m.sadrzaj}`;
-
-                        list.appendChild(li);
+                        addMessage(`${sender}: ${m.sadrzaj}`);
                     });
                 })
                 .catch(err => {
@@ -636,9 +627,8 @@
                 .catch(err => console.error(err));
             });
 
-        // =========================
+        
         // GRUPNE PORUKE
-        // =========================
 
         document.getElementById("sendGroupBtn")
             .addEventListener("click", () => {
@@ -682,14 +672,8 @@
 
                     messages.forEach(m => {
 
-                        const sender =
-                            m.posiljalacId === currentUserId
-                                ? "Ja"
-                                : getUserName(m.posiljalacId);
-
-                        addGroupMessage(
-                            `${sender}: ${m.poruka}`
-                        );
+                        const sender = m.posiljalacId === currentUserId ? "Ja" : getUserName(m.posiljalacId);
+                        addMessage(`${sender}:${m.sadrzaj}`)
                     });
                 });
         }

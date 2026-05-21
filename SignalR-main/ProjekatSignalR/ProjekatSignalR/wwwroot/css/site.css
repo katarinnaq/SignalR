@@ -151,6 +151,7 @@ input::placeholder {
     flex-direction: column;
     min-width: 0;
     height: 100%;
+    overflow: hidden;
 }
 
 .chat-header {
@@ -176,18 +177,21 @@ input::placeholder {
 /* poruke */
 .messages-container {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-
-}
-
-#messagesList, #groupMessagesList {
-    list-style: none;
-    padding: 0;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 14px;
+    padding-right: 10px;
+    min-height: 0;
+}
+
+#messagesList, #groupMessagesList {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
 }
 
 /* unos */
@@ -290,6 +294,7 @@ h2 {
     font-family: 'Poppins', sans-serif;
     font-size: 15px;
     margin-bottom: 25px;
+    font-weight: 600;
 }
 
 #registerForm {
@@ -320,6 +325,18 @@ h2 {
     margin: 0;
 }
 
+#groupMessageInput {
+    width: 100%;
+}
 
+my-message {
+    margin-left: auto;
+    background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
+    color: white;
+}
 
+.other-message {
+    margin-right: auto;
+    background: rgba(255, 255, 255, 0.08);
+}
 
