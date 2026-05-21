@@ -50,26 +50,22 @@
 
         <!-- grupni panel -->
         <div id="groupPanel" style="display:none;">
-            
             <h2>Kreiranje nove grupe</h2>
             <div>
                 <input type="text" id="newGroupName" placeholder="Ime grupe..."/>
-                <br><br>
-               
+
+                <button id="createGroupBtn">Kreiraj grupu</button>
 
                 <div id="groupUsersContainer">
                     <p>Izaberite korisnike za grupu:</p>
                     <ul id="groupUsersList"></ul>
-                    <br>
-                    <button id="createGroupBtn">Kreiraj grupu</button>
-                   
                 </div>
             </div>
 
-            <br>
+
             <h2>Lista grupa</h2>
             <ul id="groupList"></ul>
-            <h2>Izaberi grupu</h2>
+            <h2>Grupe</h2>
 
             <ul id="groupChatsList" class="chat-items">
             </ul>
@@ -116,9 +112,9 @@
         </div>
 
         <!-- grupne poruke -->
-        <div class="group-messages-container">
+        @* <div class="group-messages-container">
             <ul id="groupMessagesList"></ul>
-        </div> 
+        </div> *@
     </div>
 </div>
 
@@ -262,10 +258,6 @@
                             li.addEventListener("click", () => {
                                 activePrivateUserId = u.id;
                                 activeGroupId = null;
-<<<<<<< HEAD
-                                updateChatUI();
-=======
->>>>>>> c683b0507b4acb8f9e514496b212f6bc9c0ffca1
 
                                 document.querySelectorAll("#privateChatsList li")
                                     .forEach(x => x.classList.remove("active-chat"));
@@ -324,10 +316,6 @@
 
                                 activeGroupId = g.id;
                                 activePrivateUserId = null;
-<<<<<<< HEAD
-                                updateChatUI(); 
-=======
->>>>>>> c683b0507b4acb8f9e514496b212f6bc9c0ffca1
 
                                 document.querySelectorAll("#groupChatsList li")
                                 .forEach(x => x.classList.remove("active-chat"));
@@ -515,40 +503,5 @@
             //     loadGroupMessages(groupId);
             // });
 
-<<<<<<< HEAD
-                function updateChatUI() {
-                const privateMessages = document.querySelector(".messages-container");
-                const privateInput = document.querySelector("#messageInput").parentElement;
-
-                const groupMessages = document.querySelector(".group-messages-container");
-                const groupInput = document.querySelector("#groupMessageInput").parentElement;
-
-                if (activeGroupId) {
-        
-                groupMessages.style.display = "block";
-                groupInput.style.display = "flex";
-
-                privateMessages.style.display = "none";
-                privateInput.style.display = "none";
-                }
-                else if (activePrivateUserId) {
-      
-                privateMessages.style.display = "block";
-                privateInput.style.display = "flex";
-
-                groupMessages.style.display = "none";
-                groupInput.style.display = "none";
-                }
-                else {
-        
-                privateMessages.style.display = "none";
-                privateInput.style.display = "none";
-                groupMessages.style.display = "none";
-                groupInput.style.display = "none";
-                }
-                }
-
-=======
->>>>>>> c683b0507b4acb8f9e514496b212f6bc9c0ffca1
     </script>
 }
