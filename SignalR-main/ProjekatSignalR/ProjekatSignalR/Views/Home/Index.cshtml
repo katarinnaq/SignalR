@@ -41,64 +41,63 @@
     <!-- levi panel -->
     <div class="chat-list">
 
+        <!-- privatni chat -->
         <div id="chatPanel">
             <h2>Privatni chat</h2>
 
-            <ul id="privateChatsList" class="chat-items">
-            </ul>
+            <ul id="privateChatsList" class="chat-items"></ul>
         </div>
 
         <!-- grupni panel -->
         <div id="groupPanel" style="display:none;">
-            
+
             <h2>Kreiranje nove grupe</h2>
+
             <div>
-                <input type="text" id="newGroupName" placeholder="Ime grupe..."/>
+                <input type="text" id="newGroupName" placeholder="Ime grupe..." />
+
                 <br><br>
-               
 
                 <div id="groupUsersContainer">
                     <p>Izaberite korisnike za grupu:</p>
+
                     <ul id="groupUsersList"></ul>
+
                     <br>
-                    <button id="createGroupBtn">Kreiraj grupu</button>
-                   
+
+                    <button id="createGroupBtn">
+                        Kreiraj grupu
+                    </button>
                 </div>
             </div>
 
             <br>
+
             <h2>Lista grupa</h2>
             <ul id="groupList"></ul>
+
             <h2>Izaberi grupu</h2>
-
-            <ul id="groupChatsList" class="chat-items">
-            </ul>
-
-            <div class="message-input-container">
-                <input type="text"
-                       id="groupMessageInput"
-                        placeholder="Poruka grupi..." />
-
-                <button id="sendGroupBtn">
-                    <i class="bi bi-send-fill"></i>
-                </button>
-            </div>
+            <ul id="groupChatsList" class="chat-items"></ul>
         </div>
 
         <!-- korisnicki panel -->
         <div id="usersPanel" style="display:none;">
             <h2>Svi korisnici</h2>
+
             <ul id="usersList"></ul>
-            <ul id="allUsersList"></ul>
         </div>
     </div>
 
     <!-- desni panel -->
     <div class="chat-window">
+
         <div class="chat-header">
             <div class="chat-user">
                 <div class="online-dot"></div>
-                <span id="activeChatUser">Korisnik</span>
+
+                <span id="activeChatUser">
+                    Korisnik
+                </span>
             </div>
         </div>
 
@@ -106,27 +105,47 @@
         <div class="messages-container">
             <ul id="messagesList"></ul>
         </div>
-        <div class="message-input-container">
+
+        <div class="message-input-container" id="privateMessageContainer">
             <input type="text"
                    id="messageInput"
                    placeholder="Pošalji poruku..." />
+
             <button id="sendBtn">
                 <i class="bi bi-send-fill"></i>
             </button>
         </div>
 
         <!-- grupne poruke -->
-        <div class="group-messages-container">
+        <div class="group-messages-container" style="display:none;">
             <ul id="groupMessagesList"></ul>
-        </div> 
+        </div>
+
+        <div class="message-input-container"
+             id="groupMessageContainer"
+             style="display:none;">
+
+            <input type="text"
+                   id="groupMessageInput"
+                   placeholder="Poruka grupi..." />
+
+            <button id="sendGroupBtn">
+                <i class="bi bi-send-fill"></i>
+            </button>
+        </div>
+
     </div>
 </div>
 
-@section Scripts{
+@section Scripts {
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
 
     <script>
-        // sidebar
+
+        // =========================
+        // SIDEBAR
+        // =========================
 
         const chatBtn = document.getElementById("chatBtn");
         const groupBtn = document.getElementById("groupBtn");
@@ -136,15 +155,14 @@
         const groupPanel = document.getElementById("groupPanel");
         const usersPanel = document.getElementById("usersPanel");
 
-        let activePrivateUserId = null;
-        let activeGroupId = null;
-
         function resetSidebar() {
+
             document.querySelectorAll(".sidebar-icon")
                 .forEach(icon => icon.classList.remove("active"));
         }
 
         chatBtn.addEventListener("click", () => {
+
             resetSidebar();
             chatBtn.classList.add("active");
 
@@ -154,6 +172,7 @@
         });
 
         groupBtn.addEventListener("click", () => {
+
             resetSidebar();
             groupBtn.classList.add("active");
 
@@ -163,392 +182,520 @@
         });
 
         usersBtn.addEventListener("click", () => {
+
             resetSidebar();
             usersBtn.classList.add("active");
 
             chatPanel.style.display = "none";
             groupPanel.style.display = "none";
-            usersPanel.style.display = "block"; 
+            usersPanel.style.display = "block";
         });
-    </script>
 
+        // =========================
+        // GLOBALNE PROMENLJIVE
+        // =========================
 
-    <script>
-        // Id korisnika
         let currentUserId = '@ViewBag.UserId';
-        console.log("Trenutni korisnik: ", currentUserId);
-
-        // Ime ulogovanog korisnika
         let currentUserName = '@User.Identity.Name';
+
         let usersCache = [];
-        
-        // Kreiramo SignalR konekciju
+
+        let activePrivateUserId = null;
+        let activeGroupId = null;
+
+        console.log("Trenutni korisnik:", currentUserId);
+
+        // =========================
+        // SIGNALR
+        // =========================
+
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/chathub")
             .build();
 
-        // Funkcija za prikazivanje poruka
-        function addMessage(text){
-            const li = document.createElement("li");
-            li.textContent = text;
-            
-            // moje poruke
-            if(text.startsWith("Ja:")) {
-                li.classList.add("my-message");
-            }
-            else {
-                li.classList.add("other-message");
-            }
+        // =========================
+        // UI FUNKCIJE
+        // =========================
 
-            document.getElementById("messagesList").appendChild(li);
-        }
+        function updateChatUI() {
 
-        // Funkcija za prikazivanje grupnih poruka
-        function addGroupMessage(text){
-            const li = document.createElement("li");
-            li.textContent = text;
-            document.getElementById("groupMessagesList").appendChild(li);
-        }
+            const privateMessages =
+                document.querySelector(".messages-container");
 
-        // Funkcija za dovlacenje imena
-        function getUserName(userId)
-        {
-            const user = usersCache.find(u => u.id === userId);
-            return user ? user.userName : userId;
-        }
+            const privateInput =
+                document.getElementById("privateMessageContainer");
 
-        // SignalR event za primanje privatnih poruka
-        connection.on("ReceivePrivateMessage", (senderId, message) => {
-            const senderName = senderId === currentUserId ? 'Ja' : getUserName(senderId);
-            addMessage(`${senderName}: ${message}`);
-        });
+            const groupMessages =
+                document.querySelector(".group-messages-container");
 
-        // SignalR event za primanje grupnih poruka
-        connection.on("ReceiveGroupMessage", (senderId, message) => {
-            const senderName = senderId === currentUserId ? 'Ja' : getUserName(senderId);
-            addGroupMessage(`${senderName}: ${message}`);
-        });
+            const groupInput =
+                document.getElementById("groupMessageContainer");
 
-        // Pokretanje konekcije
-        connection.start()
-            .then(() => {
-                console.log("SignalR konekcija uspesna");
+            // grupni chat
+            if (activeGroupId) {
 
-                // Ucitaj korisnike
-                fetch("/api/User")
-                    .then(response => response.json())
-                    .then(users => {
-                        console.log(users);
-                        // const select = document.getElementById("reciverSelect");
-                        const usersList = document.getElementById("usersList");
-                        usersCache = users;
-                        const groupUsersList = document.getElementById("groupUsersList");
-                        groupUsersList.innerHTML = "";
-
-                        users.forEach(u => {
-                            // lista za privatni chat
-                            const li = document.createElement("li");
-
-                            li.innerHTML = `
-                                <div class = "chat-avatar">
-                                    ${u.userName.charAt(0).toUpperCase()}
-                                </div>
-
-                                <div>
-                                    <strong>${u.userName}</strong>
-                                </div>
-                            `;
-
-                            li.addEventListener("click", () => {
-                                activePrivateUserId = u.id;
-                                activeGroupId = null;
-<<<<<<< HEAD
-                                updateChatUI();
-=======
->>>>>>> c683b0507b4acb8f9e514496b212f6bc9c0ffca1
-
-                                document.querySelectorAll("#privateChatsList li")
-                                    .forEach(x => x.classList.remove("active-chat"));
-
-                                li.classList.add("active-chat");
-
-                                document.getElementById("activeChatUser").textContent = u.userName;
-
-                                loadPrivateMessages(u.id);
-                            });
-
-                            document.getElementById("privateChatsList").appendChild(li);
-
-
-                            // lista korisnika
-                            const userLi = document.createElement("li");
-                            userLi.textContent = u.userName;
-                            usersList.appendChild(userLi);
-
-                            // checkbox za novu grupu
-                            const liGroup = document.createElement("li");
-                            const checkbox = document.createElement("input");
-
-                            checkbox.type = "checkbox";
-                            checkbox.value = u.id;
-                            checkbox.id = `user_${u.id}`;
-                            const label = document.createElement("label");
-                            label.htmlFor = `user_${u.id}`;
-                            label.textContent = u.userName;
-                            liGroup.appendChild(checkbox);
-                            liGroup.appendChild(label);
-                            groupUsersList.appendChild(liGroup);
-                        });
-                    });
-
-                // Ucitaj grupe
-                fetch("/api/Group")
-                    .then(res => res.json())
-                    .then(groups => {
-                        // const select = document.getElementById("groupSelect");
-                        groups.forEach(g => {
-                            // lista grupa
-                            const li = document.createElement("li");
-
-                            li.innerHTML = `
-                                <div class="chat-avatar">
-                                    <i class="bi bi-people-fill"></i>
-                                </div>
-
-                                <div>
-                                    <strong>${g.naziv}</strong>
-                                </div>
-                            `;
-
-                            li.addEventListener("click", () => {
-
-                                activeGroupId = g.id;
-                                activePrivateUserId = null;
-<<<<<<< HEAD
-                                updateChatUI(); 
-=======
->>>>>>> c683b0507b4acb8f9e514496b212f6bc9c0ffca1
-
-                                document.querySelectorAll("#groupChatsList li")
-                                .forEach(x => x.classList.remove("active-chat"));
-
-                                li.classList.add("active-chat");
-
-                                document.getElementById("activeChatUser").textContent = g.naziv;
-
-                                loadGroupMessages(g.id);
-                            });
-
-                            document.getElementById("groupChatsList").appendChild(li);
-
-                            // Lista grupa
-                            const groupLi = document.createElement("li");
-                            groupLi.textContent = g.naziv;
-                            document.getElementById("groupList").appendChild(groupLi);
-                        });
-                    });
-            })
-            .catch(err => console.error(err.toString()));
-
-            // Slanje privatne poruke
-            document.getElementById("sendBtn").addEventListener("click", () => {
-                const reciverId = activePrivateUserId;
-                const message = document.getElementById("messageInput").value;
-
-                if (!reciverId)
-                {
-                    alert("Izaberite korisnika!");
-                    return;
-                }
-
-                // SignalR ce automatski koristiti ulogovanog korisnika ka senderId
-                connection.invoke("SendPrivateMessage", currentUserId, reciverId, message)
-                    .catch(err => console.error(err.toString()));
-
-                document.getElementById("messageInput").value = ""; // osciti input
-            });
-
-            // Kada korisnik izabere drugog korisnika, treba da se prikze njihova istorija poruka
-            function loadPrivateMessages(otherUserId){
-                fetch(`/api/User/messages/${otherUserId}`, { credentials: `include`})
-                .then(res => res.json())
-                .then(messages => {
-                    if(!Array.isArray(messages))
-                    {
-                        console.error("Poruke nisu niz!", messages);
-                        messages = [];
-                    }
-
-                    const list = document.getElementById("messagesList");
-                    list.innerHTML = "";
-                    console.log(messages);
-                    list.innerHTML = "";
-                    messages.forEach(m => {
-                        const sender = m.posiljalacId === currentUserId ? 'Ja' : getUserName(m.posiljalacId);
-                        const li = document.createElement("li");
-                        li.textContent = `${sender}: ${m.sadrzaj}`;
-                        list.appendChild(li);
-                    });
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert("Greska prilikom ucitavanja poruka. Proverite konzolu");
-                });
-            }
-
-            // document.getElementById("reciverSelect").addEventListener("change", (e) => {
-            //     const userId = e.target.value;
-                
-            //     const list = document.getElementById("messagesList");
-
-            //     if(!userId)
-            //     {
-            //         list.innerHTML = ""; reset ui
-            //         return;
-            //     }
-
-            //     loadPrivateMessages(userId);
-            // });
-
-            // Kreiranje nove grupe
-            document.getElementById("createGroupBtn").addEventListener("click", () => {
-                const groupName = document.getElementById("newGroupName").value;
-
-                if (!groupName)
-                {
-                    alert("Unesite ime grupe!");
-                    return;
-                }
-
-                // Skupljanje svih selektovanih korisnika
-                const selectedUserIds = Array.from(document.querySelectorAll("#groupUsersList input[type=checkbox]"))
-                .filter(cb => cb.checked)
-                .map(cb => cb.value);
-
-                if(!selectedUserIds.length)
-                {
-                    alert("Izaberite bar jednog korisnika za grupu!");
-                    return;
-                }
-
-                console.log("selected useres: ", selectedUserIds);
-                console.log("current user: ", currentUserId);
-
-                fetch("/api/CreateGroup/create", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ naziv: groupName, korisniciId:  selectedUserIds.concat(currentUserId)
-                    })
-                })
-                .then(res => res.json())
-                .then(newGroup => {
-                    console.log("Nova grupa: ", newGroup);
-
-                    // Dodaj u dropdown
-                    // const groupSelect = document.getElementById("groupSelect");
-                    // const option = document.createElement("option");
-                    // option.value = newGroup.id;
-                    // option.textContent = newGroup.naziv;
-                    // groupSelect.appendChild(option);
-
-                    // Lista grupa
-                    const li = document.createElement("li");
-                    li.textContent = newGroup.naziv;
-                    document.getElementById("groupList").appendChild(li);
-                    
-                    document.getElementById("newGroupName").value = "";
-                    document.querySelectorAll("#groupUsersList input[type=checkbox]")
-                    .forEach(cb => cb.checked = false);
-
-                    alert(`Grupa "${newGroup.naziv}" kreirana!`);
-
-                })
-                .catch(err => console.error(err));
-            });
-
-            // Slanje grupne poruke
-            document.getElementById("sendGroupBtn").addEventListener("click", () => {
-                const groupId = activeGroupId;
-                const message = document.getElementById("groupMessageInput").value;
-
-                if (!groupId)
-                {
-                    alert("Izaberite grupu!");
-                    return;
-                }
-
-                connection.invoke("SendGroupMessage", parseInt(groupId), currentUserId, message)
-                    .catch(err => console.error(err.toString()));
-
-                document.getElementById("groupMessageInput").value = ""; // osciti input
-            });
-
-            // Ucitavanje istorije grupnih poruka
-            function loadGroupMessages(groupId){
-                fetch(`/api/Group/messages/${groupId}`)
-                .then(res => res.json())
-                .then(messages => {
-                    const list = document.getElementById("groupMessagesList");
-                    list.innerHTML = "";
-                    messages.forEach(m => {
-                        const sender = m.posiljalacId === currentUserId ? 'Ja' : getUserName(m.posiljalacId);
-                        addGroupMessage(`${sender}: ${m.poruka}`);
-                    });
-                });
-            }
-
-            // document.getElementById("groupSelect").addEventListener("change", (e) => {
-            //     const groupId = e.target.value;
-
-            //     const list = document.getElementById("groupMessagesList");
-
-            //     if(!groupId)
-            //     {
-            //         REST UI
-            //         list.innerHTML = "";
-
-            //         console.log("Nema izabrane grupe");
-            //         return;
-            //     }
-
-            //     Ucitavanje istorije poruka
-            //     loadGroupMessages(groupId);
-            // });
-
-<<<<<<< HEAD
-                function updateChatUI() {
-                const privateMessages = document.querySelector(".messages-container");
-                const privateInput = document.querySelector("#messageInput").parentElement;
-
-                const groupMessages = document.querySelector(".group-messages-container");
-                const groupInput = document.querySelector("#groupMessageInput").parentElement;
-
-                if (activeGroupId) {
-        
                 groupMessages.style.display = "block";
                 groupInput.style.display = "flex";
 
                 privateMessages.style.display = "none";
                 privateInput.style.display = "none";
-                }
-                else if (activePrivateUserId) {
-      
+            }
+
+            // privatni chat
+            else if (activePrivateUserId) {
+
                 privateMessages.style.display = "block";
                 privateInput.style.display = "flex";
 
                 groupMessages.style.display = "none";
                 groupInput.style.display = "none";
-                }
-                else {
-        
+            }
+
+            // nista nije izabrano
+            else {
+
                 privateMessages.style.display = "none";
                 privateInput.style.display = "none";
+
                 groupMessages.style.display = "none";
                 groupInput.style.display = "none";
-                }
+            }
+        }
+
+        function addMessage(text) {
+
+            const li = document.createElement("li");
+
+            li.textContent = text;
+
+            if (text.startsWith("Ja:")) {
+
+                li.classList.add("my-message");
+            }
+            else {
+
+                li.classList.add("other-message");
+            }
+
+            document
+                .getElementById("messagesList")
+                .appendChild(li);
+        }
+
+        function addGroupMessage(text) {
+
+            const li = document.createElement("li");
+
+            li.textContent = text;
+
+            document
+                .getElementById("groupMessagesList")
+                .appendChild(li);
+        }
+
+        function getUserName(userId) {
+
+            const user =
+                usersCache.find(u => u.id === userId);
+
+            return user ? user.userName : userId;
+        }
+
+        // =========================
+        // SIGNALR EVENTS
+        // =========================
+
+        connection.on("ReceivePrivateMessage",
+            (senderId, message) => {
+
+                const senderName =
+                    senderId === currentUserId
+                        ? "Ja"
+                        : getUserName(senderId);
+
+                addMessage(`${senderName}: ${message}`);
+            });
+
+        connection.on("ReceiveGroupMessage",
+            (senderId, message) => {
+
+                const senderName =
+                    senderId === currentUserId
+                        ? "Ja"
+                        : getUserName(senderId);
+
+                addGroupMessage(`${senderName}: ${message}`);
+            });
+
+        // =========================
+        // START SIGNALR
+        // =========================
+
+        connection.start()
+            .then(() => {
+
+                console.log("SignalR konekcija uspešna");
+
+                loadUsers();
+                loadGroups();
+            })
+            .catch(err => console.error(err.toString()));
+
+        // =========================
+        // UCITAVANJE KORISNIKA
+        // =========================
+
+        function loadUsers() {
+
+            fetch("/api/User")
+                .then(response => response.json())
+                .then(users => {
+
+                    usersCache = users;
+
+                    const usersList =
+                        document.getElementById("usersList");
+
+                    const groupUsersList =
+                        document.getElementById("groupUsersList");
+
+                    usersList.innerHTML = "";
+                    groupUsersList.innerHTML = "";
+
+                    users.forEach(u => {
+
+                        // PRIVATNI CHAT
+                        const li = document.createElement("li");
+
+                        li.innerHTML = `
+                            <div class="chat-avatar">
+                                ${u.userName.charAt(0).toUpperCase()}
+                            </div>
+
+                            <div>
+                                <strong>${u.userName}</strong>
+                            </div>
+                        `;
+
+                        li.addEventListener("click", () => {
+
+                            activePrivateUserId = u.id;
+                            activeGroupId = null;
+
+                            updateChatUI();
+
+                            document.querySelectorAll("#privateChatsList li")
+                                .forEach(x =>
+                                    x.classList.remove("active-chat"));
+
+                            li.classList.add("active-chat");
+
+                            document.getElementById("activeChatUser")
+                                .textContent = u.userName;
+
+                            loadPrivateMessages(u.id);
+                        });
+
+                        document
+                            .getElementById("privateChatsList")
+                            .appendChild(li);
+
+                        // LISTA KORISNIKA
+                        const userLi = document.createElement("li");
+
+                        userLi.textContent = u.userName;
+
+                        usersList.appendChild(userLi);
+
+                        // CHECKBOX ZA GRUPU
+                        const liGroup = document.createElement("li");
+
+                        const checkbox =
+                            document.createElement("input");
+
+                        checkbox.type = "checkbox";
+                        checkbox.value = u.id;
+                        checkbox.id = `user_${u.id}`;
+
+                        const label =
+                            document.createElement("label");
+
+                        label.htmlFor = `user_${u.id}`;
+                        label.textContent = u.userName;
+
+                        liGroup.appendChild(checkbox);
+                        liGroup.appendChild(label);
+
+                        groupUsersList.appendChild(liGroup);
+                    });
+                });
+        }
+
+        // =========================
+        // UCITAVANJE GRUPA
+        // =========================
+
+        function loadGroups() {
+
+            fetch("/api/Group")
+                .then(res => res.json())
+                .then(groups => {
+
+                    groups.forEach(g => {
+
+                        const li =
+                            document.createElement("li");
+
+                        li.innerHTML = `
+                            <div class="chat-avatar">
+                                <i class="bi bi-people-fill"></i>
+                            </div>
+
+                            <div>
+                                <strong>${g.naziv}</strong>
+                            </div>
+                        `;
+
+                        li.addEventListener("click", () => {
+
+                            activeGroupId = g.id;
+                            activePrivateUserId = null;
+
+                            updateChatUI();
+
+                            document.querySelectorAll("#groupChatsList li")
+                                .forEach(x =>
+                                    x.classList.remove("active-chat"));
+
+                            li.classList.add("active-chat");
+
+                            document.getElementById("activeChatUser")
+                                .textContent = g.naziv;
+
+                            loadGroupMessages(g.id);
+                        });
+
+                        document
+                            .getElementById("groupChatsList")
+                            .appendChild(li);
+
+                        // lista grupa
+                        const groupLi =
+                            document.createElement("li");
+
+                        groupLi.textContent = g.naziv;
+
+                        document
+                            .getElementById("groupList")
+                            .appendChild(groupLi);
+                    });
+                });
+        }
+
+        // =========================
+        // PRIVATNE PORUKE
+        // =========================
+
+        document.getElementById("sendBtn")
+            .addEventListener("click", () => {
+
+                const receiverId = activePrivateUserId;
+
+                const message =
+                    document.getElementById("messageInput").value;
+
+                if (!receiverId) {
+
+                    alert("Izaberite korisnika!");
+                    return;
                 }
 
-=======
->>>>>>> c683b0507b4acb8f9e514496b212f6bc9c0ffca1
+                if (!message.trim()) {
+                    return;
+                }
+
+                connection.invoke(
+                    "SendPrivateMessage",
+                    currentUserId,
+                    receiverId,
+                    message
+                )
+                .catch(err => console.error(err.toString()));
+
+                document.getElementById("messageInput").value = "";
+            });
+
+        function loadPrivateMessages(otherUserId) {
+
+            fetch(`/api/User/messages/${otherUserId}`,
+                {
+                    credentials: "include"
+                })
+                .then(res => res.json())
+                .then(messages => {
+
+                    if (!Array.isArray(messages)) {
+
+                        console.error("Poruke nisu niz!", messages);
+
+                        messages = [];
+                    }
+
+                    const list =
+                        document.getElementById("messagesList");
+
+                    list.innerHTML = "";
+
+                    messages.forEach(m => {
+
+                        const sender =
+                            m.posiljalacId === currentUserId
+                                ? "Ja"
+                                : getUserName(m.posiljalacId);
+
+                        const li =
+                            document.createElement("li");
+
+                        li.textContent =
+                            `${sender}: ${m.sadrzaj}`;
+
+                        list.appendChild(li);
+                    });
+                })
+                .catch(err => {
+
+                    console.error(err);
+
+                    alert("Greška prilikom učitavanja poruka.");
+                });
+        }
+
+        // =========================
+        // KREIRANJE GRUPE
+        // =========================
+
+        document.getElementById("createGroupBtn")
+            .addEventListener("click", () => {
+
+                const groupName =
+                    document.getElementById("newGroupName").value;
+
+                if (!groupName.trim()) {
+
+                    alert("Unesite ime grupe!");
+                    return;
+                }
+
+                const selectedUserIds =
+                    Array.from(
+                        document.querySelectorAll(
+                            "#groupUsersList input[type=checkbox]"
+                        )
+                    )
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+
+                if (!selectedUserIds.length) {
+
+                    alert("Izaberite bar jednog korisnika!");
+                    return;
+                }
+
+                fetch("/api/CreateGroup/create", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        naziv: groupName,
+                        korisniciId:
+                            selectedUserIds.concat(currentUserId)
+                    })
+                })
+                .then(res => res.json())
+                .then(newGroup => {
+
+                    alert(`Grupa "${newGroup.naziv}" kreirana!`);
+
+                    document.getElementById("newGroupName").value = "";
+
+                    document.querySelectorAll(
+                        "#groupUsersList input[type=checkbox]"
+                    )
+                    .forEach(cb => cb.checked = false);
+
+                    // reload grupa
+                    document.getElementById("groupChatsList").innerHTML = "";
+                    document.getElementById("groupList").innerHTML = "";
+
+                    loadGroups();
+                })
+                .catch(err => console.error(err));
+            });
+
+        // =========================
+        // GRUPNE PORUKE
+        // =========================
+
+        document.getElementById("sendGroupBtn")
+            .addEventListener("click", () => {
+
+                const groupId = activeGroupId;
+
+                const message =
+                    document.getElementById("groupMessageInput").value;
+
+                if (!groupId) {
+
+                    alert("Izaberite grupu!");
+                    return;
+                }
+
+                if (!message.trim()) {
+                    return;
+                }
+
+                connection.invoke(
+                    "SendGroupMessage",
+                    parseInt(groupId),
+                    currentUserId,
+                    message
+                )
+                .catch(err => console.error(err.toString()));
+
+                document.getElementById("groupMessageInput").value = "";
+            });
+
+        function loadGroupMessages(groupId) {
+
+            fetch(`/api/Group/messages/${groupId}`)
+                .then(res => res.json())
+                .then(messages => {
+
+                    const list =
+                        document.getElementById("groupMessagesList");
+
+                    list.innerHTML = "";
+
+                    messages.forEach(m => {
+
+                        const sender =
+                            m.posiljalacId === currentUserId
+                                ? "Ja"
+                                : getUserName(m.posiljalacId);
+
+                        addGroupMessage(
+                            `${sender}: ${m.poruka}`
+                        );
+                    });
+                });
+        }
+
+        // inicijalno sakrij chat
+        updateChatUI();
+
     </script>
 }

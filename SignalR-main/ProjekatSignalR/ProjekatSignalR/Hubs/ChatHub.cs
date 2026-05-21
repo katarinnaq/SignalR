@@ -26,7 +26,7 @@ namespace ProjekatSignalR.Hubs
         {
             try
             {
-                Console.WriteLine("Sender: sender=Id{senderId}, reciverId={reciverId}, message={message}");
+                Console.WriteLine("Sender: sender=Id{senderId}, receiverId={receiverId}, message={message}");
                 // Provera polja da li su null
                 if (string.IsNullOrEmpty(senderId) || string.IsNullOrEmpty(receiverId)
                     || string.IsNullOrEmpty(message))
